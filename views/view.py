@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMdiSubWindow, QVBoxLayout, QStatusBar, QWidget
-from PyQt6.QtGui import QFontMetrics, QFont, QPainter
+from PyQt6.QtGui import QFontMetrics, QFont
 from views.layer import Layer
-from world.worldrect import WorldRectangle
+
 from views.viewcanvas import ViewCanvas
 from constants import LEFT, TOP, TITLE, TOOL_BAR, GLASS_LAYER, ANNOTATION_LAYER
 from views.toolbar import Toolbar
@@ -38,8 +38,6 @@ class View(QMdiSubWindow):
 
         self.glassLayer = self.add_layer(GLASS_LAYER)  # Add the glass layer on init
         self.annotation_layer = self.add_layer(ANNOTATION_LAYER)  # Add the glass layer on init
-
-        self.world_rect = WorldRectangle(-2.5, 1.5, 3.0, 4.5)  # Example world system
 
         # Set the position of the view
         left = attributes.get(LEFT, 20)
@@ -85,60 +83,3 @@ class View(QMdiSubWindow):
         if name == GLASS_LAYER or name == ANNOTATION_LAYER:
             raise ValueError(f"Cannot remove the {name}.")
         self.layers = [layer for layer in self.layers if layer.name != name]
-
-#draw all the layes on a view
-    # def draw_layers(self, painter):
-    #     # Redraw the canvas by going through layers in reverse order
-    #
-    #     for layer in reversed(self.layers):
-    #         print(f"Drawing layer {layer.name}")
-    #         for item in reversed(layer.items):
-    #             item.draw(painter, self.canvas)
-
-    def local_to_world(self, local_point):
-        """
-        Convert a point from the local system to the world system.
-
-        :param local_point: A tuple (x, y) in the local coordinate system.
-        :return: A tuple (x, y) in the world coordinate system.
-        """
-        local_x, local_y = local_point
-        canvas_size = self.canvas.size()
-        world_x = (local_x / canvas_size.width()) * self.world_rect.width + self.world_rect.x_min
-        world_y = (1 - local_y / canvas_size.height()) * self.world_rect.height + self.world_rect.y_min
-        return world_x, world_y
-
-    def world_to_local(self, world_point):
-        """
-        Convert a point from the world system to the local system.
-
-        :param world_point: A tuple (x, y) in the world coordinate system.
-        :return: A tuple (x, y) in the local coordinate system.
-        """
-        world_x, world_y = world_point
-        canvas_size = self.canvas.size()
-        local_x = (world_x - self.world_rect.x_min) / self.world_rect.width * canvas_size.width()
-        local_y = (1 - (world_y - self.world_rect.y_min) / self.world_rect.height) * canvas_size.height()
-        return local_x, local_y
-
-    def local_rect_to_world(self, local_rect):
-        """
-        Convert a rectangle from the local system to the world system.
-
-        :param local_rect: A WorldRectangle in the local coordinate system.
-        :return: A WorldRectangle in the world coordinate system.
-        """
-        x_min, y_min = self.local_to_world((local_rect.x_min, local_rect.y_min))
-        x_max, y_max = self.local_to_world((local_rect.x_min + local_rect.width, local_rect.y_min + local_rect.height))
-        return WorldRectangle(x_min, y_min, x_max - x_min, y_max - y_min)
-
-    def world_rect_to_local(self, world_rect):
-        """
-        Convert a rectangle from the world system to the local system.
-
-        :param world_rect: A WorldRectangle in the world coordinate system.
-        :return: A WorldRectangle in the local coordinate system.
-        """
-        x_min, y_min = self.world_to_local((world_rect.x_min, world_rect.y_min))
-        x_max, y_max = self.world_to_local((world_rect.x_min + world_rect.width, world_rect.y_min + world_rect.height))
-        return WorldRectangle(x_min, y_min, x_max - x_min, y_max - y_min)

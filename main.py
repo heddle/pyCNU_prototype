@@ -2,8 +2,9 @@ import sys
 from environment import cwd
 from mainwindow import MainWindow
 from views.view import View
+from world.worldrect import WorldRectangle
 from constants import AUTO_CENTER, BACKGROUND_COLOR, BG_IMAGE_PATH, FRACTION, STATUS_BAR, \
-    TITLE, TOOL_BAR, LEFT, TOP, WIDTH, HEIGHT
+    TITLE, TOOL_BAR, LEFT, TOP, WIDTH, HEIGHT, WORLD_RECTANGLE
 from PyQt6.QtWidgets import QApplication
 
 if __name__ == '__main__':
@@ -29,6 +30,7 @@ if __name__ == '__main__':
                   TOP: 100,
                   WIDTH: 600,
                   HEIGHT: 600,
+                  WORLD_RECTANGLE: WorldRectangle(-100, -100, 200, 200),
                   BACKGROUND_COLOR: "alice blue"}
     view = View(attributes)
     window.mdi.addSubWindow(view)
