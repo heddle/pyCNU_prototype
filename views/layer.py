@@ -7,8 +7,9 @@ class Layer:
         self.items = []
 
     def add_item(self, attributes):
-        item = Item(attributes=attributes)
+        item = Item(self, attributes=attributes)
         self.items.append(item)
+        self.view.update()
 
     def remove_item(self, item):
         self.items.remove(item)

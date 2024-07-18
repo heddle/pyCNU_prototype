@@ -17,95 +17,64 @@ class MdiSubWindow(QMdiSubWindow):
         content_widget = QWidget()  # Set an empty widget to hold the toolbar and layout
         self.setWidget(content_widget)
 
+        # Add the toolbar to the layout
+        layout = QVBoxLayout(content_widget)
+        layout.addWidget(toolbar)
+
         # Button group for radio button-like behavior
         self.radio_button_group = QButtonGroup()
         self.radio_button_group.setExclusive(True)
 
-        # Create QPixmap instances for the icons
+        self.pointer_button = self.createRadioButton(toolbar, self.radio_button_group, self.radio_button_callback, "pointer")
+        self.box_zoom_button = self.createRadioButton(toolbar, self.radio_button_group, self.radio_button_callback, "box_zoom")
+        self.pan_button = self.createRadioButton(toolbar, self.radio_button_group, self.radio_button_callback, "pan")
 
-        pointerPixMap = ImageManager.getInstance().get_image("pointer")
-        box_zoomPixMap = ImageManager.getInstance().get_image("box_zoom")
-        panPixMap = ImageManager.getInstance().get_image("pan")
+        self.center_button = self.createPushButton(toolbar, self.center_callback, "center")
+        self.zoom_in_button = self.createPushButton(toolbar, self.zoom_in_callback, "zoom_in")
+        self.zoom_out_button = self.createPushButton(toolbar, self.zoom_out_callback, "zoom_out")
+        self.undo_zoom_button = self.createPushButton(toolbar, self.undo_zoom_callback, "undo_zoom")
+        self.world_button = self.createPushButton(toolbar, self.world_callback, "world")
 
-        centerPixMap = ImageManager.getInstance().get_image("center")
-        zoom_inPixMap = ImageManager.getInstance().get_image("zoom_in")
-        zoom_outPixMap = ImageManager.getInstance().get_image("zoom_out")
-        undo_zoomPixMap = ImageManager.getInstance().get_image("undo_zoom")
-        worldPixMap = ImageManager.getInstance().get_image("world")
+    def createPushButton(self, toolbar, callback, name):
+        pixmap = ImageManager.getInstance().get_image(name)
+        button = QToolButton()
+        button.setIcon(QIcon(pixmap))
+        button.setCheckable(True)
+        button.setFixedSize(24, 24)  # Fixed size
+        toolbar.addWidget(button)
 
+        button.clicked.connect(lambda: callback(name))
+        return button
+    def createRadioButton(self, toolbar, buttonGroup, callback, name):
+        pixmap = ImageManager.getInstance().get_image(name)
+        button = QToolButton()
+        button.setIcon(QIcon(pixmap))
+        button.setCheckable(True)
+        button.setFixedSize(24, 24)  # Fixed size
+        buttonGroup.addButton(button)
+        toolbar.addWidget(button)
 
-        # Create QToolButton instances for the radio buttons
-        self.pointer_button = QToolButton()
-        self.pointer_button.setIcon(QIcon(pointerPixMap))
-        self.pointer_button.setCheckable(True)
-        self.pointer_button.setText("Pointer")
+        button.clicked.connect(lambda: callback(name))
+        return button
 
-        self.box_zoom_button = QToolButton()
-        self.box_zoom_button.setIcon(QIcon(box_zoomPixMap))
-        self.box_zoom_button.setCheckable(True)
-        self.box_zoom_button.setText("box_zoom")
+    def radio_button_callback(self, name):
+        print(name + " is activated")
 
-        self.pan_button = QToolButton()
-        self.pan_button.setIcon(QIcon(panPixMap))
-        self.pan_button.setCheckable(True)
-        self.pan_button.setText("pan")
+    def center_callback(self, name):
+        print(name + " is clicked")
 
+    def zoom_in_callback(self, name):
+        print(name + " is clicked")
 
-        # Add buttons to the button group
-        self.radio_button_group.addButton(self.pointer_button)
-        self.radio_button_group.addButton(self.box_zoom_button)
-        self.radio_button_group.addButton(self.pan_button)
+    def zoom_out_callback(self, name):
+        print(name + " is clicked")
 
-        # Add buttons to the toolbar
-        toolbar.addWidget(self.pointer_button)
-        toolbar.addWidget(self.box_zoom_button)
-        toolbar.addWidget(self.pan_button)
+    def undo_zoom_callback(self, name):
+        print(name + " is clicked")
 
+    def world_callback(self, name):
+        print(name + " is clicked")
 
-        # Add the toolbar to the layout of the subwindow
-        layout = QVBoxLayout(content_widget)
-        layout.addWidget(toolbar)
-
-        # Connect radio button actions to the same callback
-        # self.pointer_button.click().connect(self.radio_button_callback)
-        # self.box_zoom_button.click().connect(self.radio_button_callback)
-        # self.pan_button.click().connect(self.radio_button_callback)
-
-        # Create actions for regular buttons
-        self.center_action = QAction(QIcon(centerPixMap), "center", self)
-        self.world_action = QAction(QIcon(worldPixMap), "world", self)
-        self.zoom_in_action = QAction(QIcon(zoom_inPixMap), "zoom_in", self)
-        self.zoom_out_action = QAction(QIcon(zoom_outPixMap), "zoom_out", self)
-        self.undo_zoom_action = QAction(QIcon(undo_zoomPixMap), "undo_zoom", self)
-
-        # Add regular button actions to the toolbar
-        toolbar.addAction(self.center_action)
-        toolbar.addAction(self.world_action)
-        toolbar.addAction(self.zoom_in_action)
-        toolbar.addAction(self.zoom_out_action)
-        toolbar.addAction(self.undo_zoom_action)
-
-        # Connect regular button actions to their callbacks
-        # self.center_action.triggered.connect(self.pbutton1_callback)
-        # self.pbutton2_action.triggered.connect(self.pbutton2_callback)
-        # self.pbutton3_action.triggered.connect(self.pbutton3_callback)
-        # self.pbutton4_action.triggered.connect(self.pbutton4_callback)
-
-    def radio_button_callback(self):
-        sender = self.sender()
-   #     print(f"{sender.nam} is activated")
-
-    def pbutton1_callback(self):
-        print("PButton1 is clicked")
-
-    def pbutton2_callback(self):
-        print("PButton2 is clicked")
-
-    def pbutton3_callback(self):
-        print("PButton3 is clicked")
-
-    def pbutton4_callback(self):
-        print("PButton4 is clicked")
 
     def get_active_radiobutton(self):
         for button in self.radio_button_group.buttons():

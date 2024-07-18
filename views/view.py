@@ -1,13 +1,12 @@
 from PyQt6.QtWidgets import QMdiSubWindow, QVBoxLayout, QStatusBar, QWidget
-from PyQt6.QtGui import QFontMetrics, QFont
-from layer import Layer
+from PyQt6.QtGui import QFontMetrics, QFont, QPainter
+from views.layer import Layer
 from world.worldrect import WorldRectangle
 from views.viewcanvas import ViewCanvas
-from constants import LEFT, TOP, TITLE
-
+from constants import LEFT, TOP, TITLE, TOOL_BAR, GLASS_LAYER, ANNOTATION_LAYER
+from views.toolbar import Toolbar
 
 class View(QMdiSubWindow):
-    GLASS_LAYER_NAME = "GLASS_LAYER"
 
     def __init__(self, attributes: dict):
         super().__init__()
@@ -22,6 +21,11 @@ class View(QMdiSubWindow):
         self.layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
         self.layout.setSpacing(0)  # Remove spacing
 
+        # Add a toolbar?
+        if attributes.get(TOOL_BAR, False):
+            self.toolbar = Toolbar(self, attributes)
+            self.layout.addWidget(self.toolbar)
+
         # Create the canvas and add it to the layout
         self.canvas = ViewCanvas(self, attributes)
         self.layout.addWidget(self.canvas)
@@ -29,10 +33,12 @@ class View(QMdiSubWindow):
         self.setWindowTitle(attributes.get(TITLE, "View"))  # Set the title of the view
 
         # Create the status bar and add it to the layout
-        if (attributes.get("status_bar", False)):
+        if attributes.get("status_bar", False):
             self.createStatusBar()
 
-        self.add_layer(self.GLASS_LAYER_NAME)  # Add the glass layer on init
+        self.glassLayer = self.add_layer(GLASS_LAYER)  # Add the glass layer on init
+        self.annotation_layer = self.add_layer(ANNOTATION_LAYER)  # Add the glass layer on init
+
         self.world_rect = WorldRectangle(-2.5, 1.5, 3.0, 4.5)  # Example world system
 
         # Set the position of the view
@@ -72,18 +78,22 @@ class View(QMdiSubWindow):
         if any(layer.name == name for layer in self.layers):
             raise ValueError(f"Layer with name {name} already exists.")
         layer = Layer(view=self, name=name)
-        self.layers.insert(0 if name == self.GLASS_LAYER_NAME else len(self.layers), layer)
+        self.layers.append(layer)
+        return layer
 
     def remove_layer(self, name: str):
-        if name == self.GLASS_LAYER_NAME:
-            raise ValueError(f"Cannot remove the {self.GLASS_LAYER_NAME}.")
+        if name == GLASS_LAYER or name == ANNOTATION_LAYER:
+            raise ValueError(f"Cannot remove the {name}.")
         self.layers = [layer for layer in self.layers if layer.name != name]
 
-    def draw(self):
-        # Redraw the canvas by going through layers in reverse order
-        for layer in reversed(self.layers):
-            for item in reversed(layer.items):
-                item.draw(self.canvas)
+#draw all the layes on a view
+    # def draw_layers(self, painter):
+    #     # Redraw the canvas by going through layers in reverse order
+    #
+    #     for layer in reversed(self.layers):
+    #         print(f"Drawing layer {layer.name}")
+    #         for item in reversed(layer.items):
+    #             item.draw(painter, self.canvas)
 
     def local_to_world(self, local_point):
         """
