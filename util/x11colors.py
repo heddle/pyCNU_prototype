@@ -1,5 +1,6 @@
 from PyQt6.QtGui import QColor
 
+
 class X11Colors:
     # Dictionary of the X11 colors, filled as requested.
     x11colors = {}

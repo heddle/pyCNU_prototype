@@ -1,9 +1,12 @@
 import sys
+
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QMdiArea, QMdiSubWindow, QToolBar, QButtonGroup, QWidget, QVBoxLayout, QToolButton
 )
-from PyQt6.QtGui import QIcon, QAction
+
 from managers.imagemanager import ImageManager
+
 
 class MdiSubWindow(QMdiSubWindow):
     def __init__(self):
@@ -25,8 +28,10 @@ class MdiSubWindow(QMdiSubWindow):
         self.radio_button_group = QButtonGroup()
         self.radio_button_group.setExclusive(True)
 
-        self.pointer_button = self.createRadioButton(toolbar, self.radio_button_group, self.radio_button_callback, "pointer")
-        self.box_zoom_button = self.createRadioButton(toolbar, self.radio_button_group, self.radio_button_callback, "box_zoom")
+        self.pointer_button = self.createRadioButton(toolbar, self.radio_button_group, self.radio_button_callback,
+                                                     "pointer")
+        self.box_zoom_button = self.createRadioButton(toolbar, self.radio_button_group, self.radio_button_callback,
+                                                      "box_zoom")
         self.pan_button = self.createRadioButton(toolbar, self.radio_button_group, self.radio_button_callback, "pan")
 
         self.center_button = self.createPushButton(toolbar, self.center_callback, "center")
@@ -45,6 +50,7 @@ class MdiSubWindow(QMdiSubWindow):
 
         button.clicked.connect(lambda: callback(name))
         return button
+
     def createRadioButton(self, toolbar, buttonGroup, callback, name):
         pixmap = ImageManager.getInstance().get_image(name)
         button = QToolButton()
@@ -74,7 +80,6 @@ class MdiSubWindow(QMdiSubWindow):
 
     def world_callback(self, name):
         print(name + " is clicked")
-
 
     def get_active_radiobutton(self):
         for button in self.radio_button_group.buttons():

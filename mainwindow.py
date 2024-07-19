@@ -1,13 +1,15 @@
 from PyQt6.QtWidgets import QMainWindow, QStatusBar
-from custommdi import CustomMdiArea
+
 from constants import AUTO_CENTER, FRACTION, STATUS_BAR, TITLE
+from custommdi import CustomMdiArea
 from managers.imagemanager import ImageManager
+
 
 class MainWindow(QMainWindow):
     # singleton pattern
     _instance = None
 
-    #singleton pattern
+    # singleton pattern
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super(MainWindow, cls).__new__(cls)
@@ -27,7 +29,6 @@ class MainWindow(QMainWindow):
         # make mdi capable window
         self.mdi = CustomMdiArea(self.attributes)
         self.setCentralWidget(self.mdi)
-
 
         # get the attributes from the attributes dictionary
         # get the title of the window

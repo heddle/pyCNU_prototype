@@ -1,7 +1,9 @@
-import sys
 import os
-from PyQt6.QtWidgets import QApplication
+import sys
+
 from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QApplication
+
 
 class ImageManager:
     _instance = None
@@ -35,6 +37,7 @@ class ImageManager:
 
     def get_image(self, image_name):
         return self.image_cache.get(image_name, None)
+
 
 # Usage example
 if __name__ == "__main__":

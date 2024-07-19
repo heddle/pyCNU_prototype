@@ -24,15 +24,15 @@ WORLD_WIDTH = "world_width"
 WORLD_HEIGHT = "world_height"
 WORLD_RECTANGLE = "world_rectangle"
 
-#toolbar related constants
+# toolbar related constants
 POINTER = "pointer"
 BOX_ZOOM = "box_zoom"
 PAN = "pan"
 CENTER = "center"
 ZOOM_IN = "zoom_in"
 ZOOM_OUT = "zoom_out"
-UNDO_ZOOM = "undo_zoom"
+UNDO = "undo_zoom"
 WORLD = "world"
 
-
-
+#fixed zoom factor for zoom in and zoom out buttons
+ZOOM_FACTOR = 0.85

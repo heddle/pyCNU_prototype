@@ -1,7 +1,10 @@
-from PyQt6.QtWidgets import QMdiArea
 from PyQt6.QtGui import QPainter
+from PyQt6.QtWidgets import QMdiArea
+
 from constants import BG_IMAGE_PATH
 from managers.imagemanager import ImageManager
+
+
 class CustomMdiArea(QMdiArea):
     def __init__(self, attributes, parent=None):
         super().__init__(parent)

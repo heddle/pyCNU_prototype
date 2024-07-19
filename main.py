@@ -1,18 +1,23 @@
 import sys
+
+from PyQt6.QtWidgets import QApplication
+
+from constants import AUTO_CENTER, BACKGROUND_COLOR, BG_IMAGE_PATH, FRACTION, \
+    STATUS_BAR, TITLE, TOOL_BAR, LEFT, TOP, WIDTH, HEIGHT, WORLD_RECTANGLE, \
+    LINE_WIDTH, LINE_COLOR, FILL_COLOR
+
 from environment import cwd
 from mainwindow import MainWindow
 from views.view import View
 from world.worldrect import WorldRectangle
-from constants import AUTO_CENTER, BACKGROUND_COLOR, BG_IMAGE_PATH, FRACTION, STATUS_BAR, \
-    TITLE, TOOL_BAR, LEFT, TOP, WIDTH, HEIGHT, WORLD_RECTANGLE
-from PyQt6.QtWidgets import QApplication
+from items.rectangleitem import RectangleItem
 
 if __name__ == '__main__':
     print("Current Directory:", cwd())
 
     app = QApplication(sys.argv)
 
-# Define the attributes for the main window.
+    # Define the attributes for the main window.
     attributes = {BG_IMAGE_PATH: "cnu",
                   AUTO_CENTER: True,
                   STATUS_BAR: True,
@@ -37,8 +42,11 @@ if __name__ == '__main__':
     window.show()  # IMPORTANT!!!!! Windows are hidden by default.
 
     layer = view.annotation_layer
-    item = layer.add_item(attributes)
-
+    attributes = {LINE_COLOR: "blue",
+                  LINE_WIDTH: 2,
+                  FILL_COLOR: "yellow",
+                  WORLD_RECTANGLE: WorldRectangle(0, 10, 50, 70)}
+    rectItem = RectangleItem(layer, attributes)
 
     # Start the event loop.
     sys.exit(app.exec())
