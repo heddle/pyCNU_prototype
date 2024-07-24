@@ -35,7 +35,7 @@ if __name__ == '__main__':
                   TOP: 100,
                   WIDTH: 600,
                   HEIGHT: 600,
-                  WORLD_RECTANGLE: WorldRectangle(-100, -100, 200, 200),
+                  WORLD_RECTANGLE: WorldRectangle(-100, -100, 250, 250),
                   BACKGROUND_COLOR: "alice blue"}
     view = View(attributes)
     window.mdi.addSubWindow(view)
@@ -46,7 +46,14 @@ if __name__ == '__main__':
                   LINE_WIDTH: 2,
                   FILL_COLOR: "yellow",
                   WORLD_RECTANGLE: WorldRectangle(0, 10, 50, 70)}
-    rectItem = RectangleItem(layer, attributes)
+    RectangleItem(layer, attributes)
+
+    layer = view.top_layer
+    attributes = {LINE_COLOR: "wheat",
+                  LINE_WIDTH: 1,
+                  FILL_COLOR: "#dd4455",
+                  WORLD_RECTANGLE: WorldRectangle(20, 30, 80, 80)}
+    RectangleItem(layer, attributes)
 
     # Start the event loop.
     sys.exit(app.exec())

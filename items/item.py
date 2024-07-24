@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QRect, QPoint
 from PyQt6.QtGui import QColor, QBrush, QPainter, QPen
 from util.x11colors import X11Colors
-from constants import FILL_COLOR, LINE_COLOR, LINE_WIDTH, TEXT_COLOR
+from constants import FILL_COLOR, LINE_COLOR, LINE_WIDTH, DELETABLE, \
+    DRAGGABLE, SELECTABLE, RESIZABLE, ROTATABLE
 
 
 class Item(ABC):
@@ -12,6 +13,62 @@ class Item(ABC):
         self._locked = False
         self._selected = False
         layer.add_item(self)
+
+        self._deletable = attributes.get(DELETABLE, True)
+        self._draggable = attributes.get(DRAGGABLE, True)
+        self._selectable = attributes.get(SELECTABLE, True)
+        self._resizable = attributes.get(RESIZABLE, True)
+        self._rotatable = attributes.get(ROTATABLE, True)
+
+    @property
+    def deletable(self):
+        """Return the deletable status of the item"""
+        return self._deletable
+
+    @deletable.setter
+    def deletable(self, value):
+        """Set the deletable status of the item"""
+        self._deletable = value
+
+    @property
+    def draggable(self):
+        """Return the draggable status of the item"""
+        return self._draggable
+
+    @draggable.setter
+    def draggable(self, value):
+        """Set the draggable status of the item"""
+        self._draggable = value
+
+    @property
+    def selectable(self):
+        """Return the selectable status of the item"""
+        return self._selectable
+
+    @selectable.setter
+    def selectable(self, value):
+        """Set the selectable status of the item"""
+        self._selectable = value
+
+    @property
+    def resizable(self):
+        """Return the resizable status of the item"""
+        return self._resizable
+
+    @resizable.setter
+    def resizable(self, value):
+        """Set the resizable status of the item"""
+        self._resizable = value
+
+    @property
+    def rotatable(self):
+        """Return the rotatable status of the item"""
+        return self._rotatable
+
+    @rotatable.setter
+    def rotatable(self, value):
+        """Set the rotatable status of the item"""
+        self._rotatable = value
 
     @property
     def locked(self):
@@ -80,11 +137,17 @@ class Item(ABC):
             self.draw_selection(canvas, painter)
 
     def draw_selection(self, canvas, painter):
+        print("Drawing selection")
         """Draw the selection points of the item"""
         painter.setPen(QPen(Qt.GlobalColor.black, 1, Qt.PenStyle.SolidLine))
-        painter.setBrush(QBrush(Qt.GlobalColor.black, Qt.BrushStyle.SolidPattern))
+        painter.setBrush(QBrush(Qt.GlobalColor.white, Qt.BrushStyle.SolidPattern))
         for point in self.get_selection_points():
-            painter.drawRect(point[0] - 3, point[1] - 3, 6, 6)
+            painter.drawRect(point[0] - 4, point[1] - 4, 8, 8)
+
+    def enclosed_by(self, q_rect:QRect):
+        """Return True if the item is enclosed by the local
+        pixel rectangle, False otherwise"""
+        return q_rect.contains(self.get_bounds())
 
     @abstractmethod
     def custom_draw(self, canvas, painter):
@@ -92,7 +155,16 @@ class Item(ABC):
         pass
 
     @abstractmethod
-    def contains(self, world_point):
+    def move(self, dx:float, dy:float):
+        """Move the item by the given world deltas"""
+        pass
+
+    @abstractmethod
+    def get_bounds(self)->QRect:
+        """Return the bounding rectangle (local pixel coordinates) of the item"""
+        pass
+
+    def contains(self, q_point:QPoint):
         """Return True if the item contains the world point, False otherwise"""
         pass
 

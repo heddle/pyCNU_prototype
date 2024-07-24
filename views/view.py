@@ -1,7 +1,9 @@
+from PyQt6.QtCore import QRect
 from PyQt6.QtGui import QFontMetrics, QFont
 from PyQt6.QtWidgets import QMdiSubWindow, QVBoxLayout, QStatusBar, QWidget
 
-from constants import LEFT, TOP, TITLE, TOOL_BAR, GLASS_LAYER, ANNOTATION_LAYER
+from constants import LEFT, TOP, TITLE, TOOL_BAR, TOP_LAYER, MIDDLE_LAYER,\
+    BOTTOM_LAYER, ANNOTATION_LAYER
 from views.layer import Layer
 from views.toolbar import Toolbar
 from views.viewcanvas import ViewCanvas
@@ -37,8 +39,11 @@ class View(QMdiSubWindow):
         if attributes.get("status_bar", False):
             self.statusBar = self.create_status_bar()
 
-        self.__glassLayer = self.add_layer(GLASS_LAYER)  # Add the glass layer on init
-        self.__annotation_layer = self.add_layer(ANNOTATION_LAYER)  # Add the glass layer on init
+        # add the default layers
+        self.__annotation_layer = self.add_layer(ANNOTATION_LAYER)  # Add the annotation layer on init
+        self.__top_layer = self.add_layer(TOP_LAYER)  # Add the top layer on init
+        self.__middle_layer = self.add_layer(MIDDLE_LAYER)  # Add the middle layer on init
+        self.__bottom_layer = self.add_layer(BOTTOM_LAYER)  # Add the bottom layer on init
 
         # Set the position of the view
         left = attributes.get(LEFT, 20)
@@ -46,12 +51,20 @@ class View(QMdiSubWindow):
         self.move(left, top)
 
     @property
-    def glass_layer(self):
-        return self.__glassLayer
-
-    @property
     def annotation_layer(self):
         return self.__annotation_layer
+
+    @property
+    def top_layer(self):
+        return self.__top_layer
+
+    @property
+    def  middle_layer(self):
+        return self.__middle_layer
+
+    @property
+    def bottom_layer(self):
+        return self.__bottom_layer
 
     # check if there is a status bar
     def has_status_bar(self):
@@ -59,7 +72,8 @@ class View(QMdiSubWindow):
 
     # create the status bar
     def create_status_bar(self):
-        """ Create a status bar for the view. """
+        """ Create a status bar for the view.
+        :return: The status bar."""
         statusBar = QStatusBar()
 
         # Create a QFont object
@@ -79,7 +93,19 @@ class View(QMdiSubWindow):
         self.layout.addWidget(statusBar)
         return statusBar
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        new_size = event.size()
+        self.canvas.resize(new_size.width(), new_size.height())
+        rect = QRect(0, 0, new_size.width(), new_size.height())
+        self.canvas.zoom_to_rect(rect)
+        print(f"SubWindow resized to: {new_size.width()}x{new_size.height()}")
+
     def add_layer(self, name: str):
+        """ Add a layer to the view.
+        :param name: The name of the layer.
+        :return: The layer."""
+
         if any(layer.name == name for layer in self.layers):
             raise ValueError(f"Layer with name {name} already exists.")
         layer = Layer(view=self, name=name)
@@ -87,6 +113,6 @@ class View(QMdiSubWindow):
         return layer
 
     def remove_layer(self, name: str):
-        if name == GLASS_LAYER or name == ANNOTATION_LAYER:
+        if name == ANNOTATION_LAYER:
             raise ValueError(f"Cannot remove the {name}.")
         self.layers = [layer for layer in self.layers if layer.name != name]

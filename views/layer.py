@@ -11,6 +11,18 @@ class Layer:
         self.view = view
         self.name = name
         self.items = []
+        self._visible = True
+
+    @property
+    def visible(self):
+        """Return the visibility of the layer."""
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        """Set the visibility of the layer."""
+        self._visible = value
+        self.view.update()
 
     def add_item(self, item, update=True):
         """
