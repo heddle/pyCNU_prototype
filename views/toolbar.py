@@ -19,10 +19,14 @@ class Toolbar(QToolBar):
         self.radio_button_group = QButtonGroup()
         self.radio_button_group.setExclusive(True)
 
-        self.pointer_button = self.create_radio_button(self.radio_button_group, self.radio_button_callback, POINTER, "Selector tool")
-        self.box_zoom_button = self.create_radio_button(self.radio_button_group, self.radio_button_callback, BOX_ZOOM, "Rubber-band zoom")
-        self.pan_button = self.create_radio_button(self.radio_button_group, self.radio_button_callback, PAN, "Pan the view")
-        self.center_button = self.create_radio_button(self.radio_button_group, self.radio_button_callback, CENTER, "Recenter the view")
+        self.pointer_button = self.create_radio_button(self.radio_button_group, self.radio_button_callback,
+                                                       POINTER, "Selector tool")
+        self.box_zoom_button = self.create_radio_button(self.radio_button_group, self.radio_button_callback, BOX_ZOOM,
+                                                        "Rubber-band zoom")
+        self.pan_button = self.create_radio_button(self.radio_button_group, self.radio_button_callback,
+                                                   PAN, "Pan the view")
+        self.center_button = self.create_radio_button(self.radio_button_group, self.radio_button_callback, CENTER,
+                                                      "Recenter the view")
         self.pointer_button.setChecked(True)
 
         self.zoom_in_button = self.create_push_button(self.zoom_in_callback, ZOOM_IN, "Zoom in by a fixed factor")
@@ -31,7 +35,7 @@ class Toolbar(QToolBar):
         self.world_button = self.create_push_button(self.world_callback, WORLD, "Restore the default world")
 
     def create_push_button(self, callback, name, tooltip=None):
-        pixmap = ImageManager.getInstance().get_image(name)
+        pixmap = ImageManager.get_instance().get_image(name)
         button = QToolButton()
         button.setIcon(QIcon(pixmap))
         button.setCheckable(False)
@@ -45,10 +49,10 @@ class Toolbar(QToolBar):
         button.clicked.connect(lambda: callback(name))
         return button
 
-    def create_radio_button(self, buttonGroup, callback, name, tooltip=None):
+    def create_radio_button(self, button_group, callback, name, tooltip=None):
         button = self.create_push_button(callback, name, tooltip)
         button.setCheckable(True)
-        buttonGroup.addButton(button)
+        button_group.addButton(button)
         return button
 
     def radio_button_callback(self, name):

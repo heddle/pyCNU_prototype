@@ -9,7 +9,7 @@ class ImageManager:
     _instance = None
 
     @staticmethod
-    def getInstance():
+    def get_instance():
         if ImageManager._instance is None:
             ImageManager()
         return ImageManager._instance
@@ -42,7 +42,7 @@ class ImageManager:
 # Usage example
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    image_manager = ImageManager.getInstance()
+    image_manager = ImageManager.get_instance()
 
     # Test the image manager
     test_image = image_manager.get_image('cnu')

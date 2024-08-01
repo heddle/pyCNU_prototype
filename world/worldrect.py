@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+
 class WorldRectangle:
     def __init__(self, x_min, y_min, width, height):
         self.x_min = float(x_min)

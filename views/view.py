@@ -1,20 +1,25 @@
 from PyQt6.QtCore import QRect
 from PyQt6.QtGui import QFontMetrics, QFont
 from PyQt6.QtWidgets import QMdiSubWindow, QVBoxLayout, QStatusBar, QWidget
+from PyQt6.QtCore import QEvent, Qt
 
 from constants import LEFT, TOP, TITLE, TOOL_BAR, TOP_LAYER, MIDDLE_LAYER,\
     BOTTOM_LAYER, ANNOTATION_LAYER
 from views.layer import Layer
 from views.toolbar import Toolbar
 from views.viewcanvas import ViewCanvas
+from mdiapplication.mainwindow import MainWindow
 
 
 class View(QMdiSubWindow):
 
-    def __init__(self, attributes: dict):
-        super().__init__()
+    def __init__(self, main_window: MainWindow, attributes: dict, parent=None):
+        super().__init__(parent)
+        self.main_window = main_window
         self.attributes = attributes
         self.layers = []
+
+        self.setWindowFlags(Qt.WindowType.Dialog)
 
         # Create a central widget and set a layout
         central_widget = QWidget()
@@ -37,7 +42,7 @@ class View(QMdiSubWindow):
 
         # Create the status bar and add it to the layout
         if attributes.get("status_bar", False):
-            self.statusBar = self.create_status_bar()
+            self.status_bar = self.create_status_bar()
 
         # add the default layers
         self.__annotation_layer = self.add_layer(ANNOTATION_LAYER)  # Add the annotation layer on init
@@ -50,6 +55,17 @@ class View(QMdiSubWindow):
         top = attributes.get(TOP, 20)
         self.move(left, top)
 
+        main_window.mdi.addSubWindow(self)
+
+        # visible?
+        visible = attributes.get("visible", True)
+        if visible:
+            self.show()
+        else:
+            self.hide()
+
+        main_window.views_manager.add_view(self)
+
     @property
     def annotation_layer(self):
         return self.__annotation_layer
@@ -59,7 +75,7 @@ class View(QMdiSubWindow):
         return self.__top_layer
 
     @property
-    def  middle_layer(self):
+    def middle_layer(self):
         return self.__middle_layer
 
     @property
@@ -68,30 +84,30 @@ class View(QMdiSubWindow):
 
     # check if there is a status bar
     def has_status_bar(self):
-        return self.statusBar is not None
+        return self.status_bar is not None
 
     # create the status bar
     def create_status_bar(self):
         """ Create a status bar for the view.
         :return: The status bar."""
-        statusBar = QStatusBar()
+        status_bar = QStatusBar()
 
         # Create a QFont object
         font = QFont()
         font.setFamily("Arial")
         font.setPointSize(12)
-        statusBar.setFont(font)
+        status_bar.setFont(font)
 
         # Get the height of one line of text
         font_metrics = QFontMetrics(font)
         text_height = font_metrics.height()
 
         # Set the fixed height of the status bar to match one line of text
-        statusBar.setFixedHeight(text_height + 4)  # Add some padding for better appearance
-        statusBar.setStyleSheet("QStatusBar { background-color: #111111; \
+        status_bar.setFixedHeight(text_height + 4)  # Add some padding for better appearance
+        status_bar.setStyleSheet("QStatusBar { background-color: #111111; \
         color: cyan; border: 1px solid black; }")
-        self.layout.addWidget(statusBar)
-        return statusBar
+        self.layout.addWidget(status_bar)
+        return status_bar
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -116,3 +132,17 @@ class View(QMdiSubWindow):
         if name == ANNOTATION_LAYER:
             raise ValueError(f"Cannot remove the {name}.")
         self.layers = [layer for layer in self.layers if layer.name != name]
+
+    def closeEvent(self, event):
+        pass
+
+    def showEvent(self, event):
+        super().showEvent(event)
+
+    def hideEvent(self, event):
+        print("Window is hidden")
+        MainWindow.get_instance().views_manager.update_menu()
+        super().hideEvent(event)
+
+    def changeEvent(self, event):
+        pass

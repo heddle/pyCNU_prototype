@@ -11,7 +11,7 @@ class CustomMdiArea(QMdiArea):
         # tile a background image?
         bg_image = str(attributes.get(BG_IMAGE_PATH))
         if bg_image:
-            image = ImageManager.getInstance().get_image(bg_image)
+            image = ImageManager.get_instance().get_image(bg_image)
             if image:
                 self.background_image = image
 

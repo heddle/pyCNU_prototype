@@ -19,12 +19,13 @@ TEXT_COLOR = "text_color"
 TOOL_BAR = "tool_bar"
 TOP = "top"
 TOP_LAYER = "top_layer"
+VISIBLE = "visible"
 WIDTH = "width"
-X_MIN = "x_min"
-Y_MIN = "y_min"
 WORLD_WIDTH = "world_width"
 WORLD_HEIGHT = "world_height"
 WORLD_RECTANGLE = "world_rectangle"
+X_MIN = "x_min"
+Y_MIN = "y_min"
 
 # toolbar related constants
 POINTER = "pointer"
@@ -43,5 +44,5 @@ SELECTABLE = "selectable"
 RESIZABLE = "resizable"
 ROTATABLE = "rotatable"
 
-#fixed zoom factor for zoom in and zoom out buttons
+# fixed zoom factor for zoom in and zoom out buttons
 ZOOM_FACTOR = 0.85

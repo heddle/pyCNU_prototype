@@ -1,13 +1,18 @@
-from PyQt6.QtWidgets import QMainWindow, QStatusBar
-
+from PyQt6.QtWidgets import QMainWindow, QStatusBar, QMenu
+from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QAction
 from constants import AUTO_CENTER, FRACTION, STATUS_BAR, TITLE
 from custommdi import CustomMdiArea
-from managers.imagemanager import ImageManager
+from managers.viewsmenumanager import ViewsMenuManager
 
 
 class MainWindow(QMainWindow):
     # singleton pattern
     _instance = None
+    menu_bar = None
+    file_menu = None
+    views_menu = None
+    views_manager = None
 
     # singleton pattern
     def __new__(cls, *args, **kwargs):
@@ -19,6 +24,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # singleton pattern
+
         if hasattr(self, '_initialized') and self._initialized:
             return
         self._initialized = True
@@ -64,13 +70,46 @@ class MainWindow(QMainWindow):
         # set the size and location of the window
         self.setGeometry(left, top, width, height)
 
-        status_bar = attributes.get(STATUS_BAR, False)
-        if status_bar:
-            self.statusBar = QStatusBar()
-            self.setStatusBar(self.statusBar)
-            self.statusBar.setStyleSheet("QStatusBar { background-color: white; }")
+        # create a status bar?
+        if attributes.get(STATUS_BAR, False):
+            self.status_bar = QStatusBar(self)
+            self.setStatusBar(self.status_bar)
+            self.status_bar.setStyleSheet("QStatusBar { background-color: white; }")
 
-            self.statusBar.showMessage("Ready")
+            self.status_bar.showMessage("Ready")
 
-    def initManagers(self):
-        self.image_manager = ImageManager()
+        # create the menus
+        self._create_menus()
+
+        # Call the after_init method after the __init__ completes
+        QTimer.singleShot(0, self.after_init)
+
+    def after_init(self):
+        print("Initialization is complete. This method runs after __init__.")
+
+    def _create_menus(self):
+        self.menu_bar = self.menuBar()
+        self.menu_bar.setNativeMenuBar(False)
+        self.create_file_menu()
+        self.create_views_menu()
+
+    def create_file_menu(self):
+        self.file_menu = self.menu_bar.addMenu("File")
+
+        # Exit action
+        quit_action = QAction("Quit", self)
+        quit_action.triggered.connect(self.exit_app)
+        quit_action.setShortcut("Ctrl+Q")
+        self.file_menu.addAction(quit_action)
+
+    def create_views_menu(self):
+        self.views_menu = QMenu('Views')
+        self.menu_bar.addMenu(self.views_menu)
+        self.views_manager = ViewsMenuManager(self.views_menu, self.mdi)
+
+    def exit_app(self):
+        self.close()
+
+    @staticmethod
+    def get_instance():
+        return MainWindow._instance

@@ -8,6 +8,7 @@ from world.worldrect import WorldRectangle
 from items.item import Item
 from typing import Optional
 
+
 class ViewCanvas(QWidget):
     def __init__(self, view, attributes):
         super().__init__()
@@ -22,7 +23,7 @@ class ViewCanvas(QWidget):
         self.last_mouse_local = None
         self.last_mouse_world = None
 
-        #for rubber-banding
+        # for rubber-banding
         self.rubber_band_rect = None
         self.rubber_band_origin = None
 
@@ -46,7 +47,7 @@ class ViewCanvas(QWidget):
         # Apply the palette to the canvas
         self.setPalette(palette)
 
-        # Enable auto-fill background
+        # Enable autofill background
         self.setAutoFillBackground(True)
 
     def enterEvent(self, event):
@@ -62,26 +63,40 @@ class ViewCanvas(QWidget):
         self.setMouseTracking(False)  # Disable mouse tracking when the mouse leaves the canvas
 
     def mousePressEvent(self, event: QMouseEvent):
-        if event.button() == Qt.MouseButton.LeftButton:
+        shifted = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+        control = event.modifiers() & Qt.KeyboardModifier.ControlModifier
+        lb = event.button() == Qt.MouseButton.LeftButton
+        rb = event.button() == Qt.MouseButton.RightButton
+        mb3 = rb or (lb and control)
+        mb1 = lb and not mb3
+
+        if mb1:
             self.is_dragging = True
             local_point = self.mapFromGlobal(event.globalPosition().toPoint())
             self.last_mouse_local = local_point
             self.rubber_band_origin = local_point
-            world_point = self.local_to_world((local_point.x(), local_point.y()))
+            world_point = self.local_to_world(QPoint(local_point.x(), local_point.y()))
             self.last_mouse_world = world_point
-            shifted = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
             self.handle_simple_click(local_point, world_point, shifted)
+        elif mb3:
+            current = self.view.toolbar.get_active_radiobutton()
+            if current == POINTER:
+                self.setCursor(Qt.CursorShape.OpenHandCursor)
+                item = self.item_at_point(self.mapFromGlobal(event.globalPosition().toPoint()))
+                if item:
+                    item.context_menu(event)
+
     def mouseMoveEvent(self, event: QMouseEvent):
         local_point = self.mapFromGlobal(event.globalPosition().toPoint())
-        world_point = self.local_to_world((local_point.x(), local_point.y()))
-        self.view.statusBar.showMessage(f"Mouse Moved at Local: {local_point}, World: {world_point}")
+        world_point = self.local_to_world(QPoint(local_point.x(), local_point.y()))
+        self.view.status_bar.showMessage(f"Mouse Moved at Local: {local_point}, World: {world_point}")
 
         # are we dragging?
         if self.is_dragging:
             current_pos_loc = local_point
             delta_loc = current_pos_loc - self.last_mouse_local
             self.last_mouse_local = current_pos_loc
-            self.view.statusBar.showMessage(f"Dragging with delta: ({delta_loc.x()}, {delta_loc.y()})")
+            self.view.status_bar.showMessage(f"Dragging with delta: ({delta_loc.x()}, {delta_loc.y()})")
 
             current_pos_world = world_point
             delta_world = current_pos_world - self.last_mouse_world
@@ -104,7 +119,6 @@ class ViewCanvas(QWidget):
                     self.rubber_band_rect = QRect(self.rubber_band_origin, current_pos_loc).normalized()
                     self.update()
 
-
         else:
             # Add your custom logic here
             pass
@@ -118,8 +132,8 @@ class ViewCanvas(QWidget):
         if event.button() == Qt.MouseButton.LeftButton:
             self.is_dragging = False
             local_point = self.mapFromGlobal(event.globalPosition().toPoint())
-            world_point = self.local_to_world((local_point.x(), local_point.y()))
-            self.view.statusBar.showMessage(f"Mouse Released at Local: {local_point}, World: {world_point}")
+            world_point = self.local_to_world(QPoint(local_point.x(), local_point.y()))
+            self.view.status_bar.showMessage(f"Mouse Released at Local: {local_point}, World: {world_point}")
 
             if self.view.toolbar:
                 shifted = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
@@ -152,8 +166,7 @@ class ViewCanvas(QWidget):
         self.rubber_band_rect = None
         self.rubber_band_origin = None
 
-
-    def zoom_to_rect(self, rect : QRect):
+    def zoom_to_rect(self, rect: QRect):
         """
         Zoom to a local rectangle.
         :param rect: the rectangle to zoom to.
@@ -167,19 +180,6 @@ class ViewCanvas(QWidget):
         self.world = world_rect
         self.update()
 
-    def local_to_world(self, local_point):
-        """
-        Convert a point from the local system to the world system.
-
-        :param local_point: A tuple (x, y) in the local coordinate system.
-        :return: A tuple (x, y) in the world coordinate system.
-        """
-        local_x, local_y = local_point
-        canvas_size = self.size()
-        world_x = (local_x / canvas_size.width()) * self.world.width + self.world.x_min
-        world_y = (1 - local_y / canvas_size.height()) * self.world.height + self.world.y_min
-        return world_x, world_y
-
     def pan(self, dx, dy):
         """
         Pan the world by dx and dy.
@@ -189,16 +189,17 @@ class ViewCanvas(QWidget):
         yc = self.size().height() / 2
         xc -= dx
         yc -= dy
-        x, y = self.local_to_world((xc, yc))
-        self.center((x, y))
+        wp = self.local_to_world(QPoint(int(xc), int(yc)))
+        self.center(wp)
         self.update()
 
-    def center(self, world_point):
+    def center(self, world_point: QPointF):
         """
         Center the world.
         :return: None
         """
-        x, y = world_point
+        x = world_point.x()
+        y = world_point.y()
         xc, yc = self.world.center()
         dx = x - xc
         dy = y - yc
@@ -237,18 +238,34 @@ class ViewCanvas(QWidget):
         self.world = self.default_world.copy()
         self.update()
 
-    def world_to_local(self, world_point):
+    def local_to_world(self, local_point: QPoint) -> QPointF:
+        """
+        Convert a point from the local system to the world system.
+
+        :param local_point: A tuple (x, y) in the local coordinate system.
+        :return: A tuple (x, y) in the world coordinate system.
+        """
+        local_x = local_point.x()
+        local_y = local_point.y()
+        canvas_size = self.size()
+        world_x = (local_x / canvas_size.width()) * self.world.width + self.world.x_min
+        world_y = (1 - local_y / canvas_size.height()) * self.world.height + self.world.y_min
+        return QPointF(world_x, world_y)
+
+    def world_to_local(self, world_point: QPointF) -> QPoint:
         """
         Convert a point from the world system to the local system.
 
         :param world_point: A tuple (x, y) in the world coordinate system.
         :return: A tuple (x, y) in the local coordinate system.
         """
-        world_x, world_y = world_point
+        world_x = world_point.x()
+        world_y = world_point.y()
+
         canvas_size = self.size()
         local_x = (world_x - self.world.x_min) / self.world.width * canvas_size.width()
         local_y = (1 - (world_y - self.world.y_min) / self.world.height) * canvas_size.height()
-        return local_x, local_y
+        return QPoint(int(local_x), int(local_y))
 
     def local_rect_to_world(self, local_rect: QRect) -> WorldRectangle:
         """
@@ -259,11 +276,15 @@ class ViewCanvas(QWidget):
         """
         bottom = local_rect.y() + local_rect.height()
         right = local_rect.x() + local_rect.width()
-        x_min, y_min = self.local_to_world((local_rect.x(), bottom))
-        x_max, y_max = self.local_to_world((right, local_rect.y()))
+        wp_min = self.local_to_world(QPoint(local_rect.x(), bottom))
+        wp_max = self.local_to_world(QPoint(right, local_rect.y()))
+        x_min = wp_min.x()
+        y_min = wp_min.y()
+        x_max = wp_max.x()
+        y_max = wp_max.y()
         return WorldRectangle(x_min, y_min, x_max - x_min, y_max - y_min)
 
-    def world_rect_to_local(self, world_rect : WorldRectangle) -> QRect:
+    def world_rect_to_local(self, world_rect: WorldRectangle) -> QRect:
         """
         Convert a rectangle from the world system to the local system.
 
@@ -273,8 +294,12 @@ class ViewCanvas(QWidget):
         x_max = world_rect.x_min + world_rect.width
         y_max = world_rect.y_min + world_rect.height
 
-        left, top = self.world_to_local((world_rect.x_min, y_max))
-        right, bottom = self.world_to_local((x_max, world_rect.y_min))
+        p_lt = self.world_to_local(QPointF(world_rect.x_min, y_max))
+        p_rb = self.world_to_local(QPointF(x_max, world_rect.y_min))
+        left = p_lt.x()
+        top = p_lt.y()
+        right = p_rb.x()
+        bottom = p_rb.y()
         return QRect(int(left), int(top), int(right - left), int(bottom - top))
 
     def paintEvent(self, event):
@@ -304,7 +329,6 @@ class ViewCanvas(QWidget):
 
     def draw_layers(self):
         for layer in reversed(self.view.layers):
-            print(f"Drawing layer {layer.name}")
             for item in reversed(layer.items):
                 item.draw(self)
 
@@ -335,7 +359,7 @@ class ViewCanvas(QWidget):
 
     def clicked_on_items(self, items, shifted):
         """Handle the selection of multiple items with the same algorithm
-        as in powerpoint
+        as in PowerPoint
         :param items: The items clicked on
         :param shifted: Whether the shift key is pressed"""
 
@@ -357,7 +381,7 @@ class ViewCanvas(QWidget):
 
     def clicked_on_item(self, item: Item, shifted):
         """Handle the selection of an item with the same algorithm
-        as in powerpoint
+        as in PowerPoint
         :param item: The item clicked on
         :param shifted: Whether the shift key is pressed"""
         if item.selectable:
@@ -365,12 +389,9 @@ class ViewCanvas(QWidget):
                 if shifted:
                     item.selected = False
                 else:
-               #     self.deselect_all()
                     item.selected = True
-            else: #not originally selected
+            else:  # not originally selected
                 if not shifted:
                     self.deselect_all()
                 item.selected = True
             self.update()
-
-
