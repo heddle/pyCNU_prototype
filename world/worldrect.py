@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""
+This script defines a class WorldRectangle that represents a rectangle in the world coordinate system.
+The reason we use this instead of QRectF is that the y coordinate system is flipped in the world coordinate system.
+In the world coordinate system, the origin is at the bottom left corner of the screen. For QRectF, the origin is at the
+top left corner of the screen.
+"""
 
 class WorldRectangle:
     def __init__(self, x_min, y_min, width, height):

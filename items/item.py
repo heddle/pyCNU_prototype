@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from PyQt6.QtCore import Qt, QRect, QPoint
+from PyQt6.QtCore import Qt, QRect, QPoint, QPointF
 from PyQt6.QtWidgets import QMenu, QColorDialog
 from PyQt6.QtGui import QColor, QBrush, QPainter, QPen, QAction, QMouseEvent
 from util.x11colors import X11Colors
@@ -247,7 +247,13 @@ class Item(ABC):
         """Return the bounding rectangle (local pixel coordinates) of the item"""
         pass
 
-    def contains(self, q_point: QPoint):
+    @abstractmethod
+    def contains_local(self, q_point: QPoint):
+        """Return True if the item contains the local point, False otherwise"""
+        pass
+
+    @abstractmethod
+    def contains_world(self, q_point: QPointF):
         """Return True if the item contains the world point, False otherwise"""
         pass
 

@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, QRect, QPoint, QPointF
-from PyQt6.QtGui import QMouseEvent, QPalette, QColor, QPainter, QPen
+from PyQt6.QtGui import QMouseEvent, QPalette, QColor, QPainter, QPen, QPolygonF, QPolygon
 from PyQt6.QtWidgets import QWidget
 
 from constants import BOX_ZOOM, CENTER, PAN, POINTER, ZOOM_FACTOR, BACKGROUND_COLOR, WIDTH, HEIGHT, WORLD_RECTANGLE
@@ -302,6 +302,32 @@ class ViewCanvas(QWidget):
         bottom = p_rb.y()
         return QRect(int(left), int(top), int(right - left), int(bottom - top))
 
+
+    """
+    Convert a polygon from the world system to the local system.
+    :param world_polygon: A QPolygonF in the world coordinate system.
+    :return: A QPolygon in the local coordinate system.
+    """
+    def world_polygon_to_local(self, world_polygon: QPolygonF) -> QPolygon:
+        # Convert QPolygonF to QPolygon by applying world_to_local on each point
+        local_polygon = QPolygon()
+        for world_point in world_polygon:
+            local_point = self.world_to_local(world_point)
+            local_polygon.append(local_point)
+        return local_polygon
+
+    """
+    Convert a polygon from the local system to the world system.
+    :param local_polygon: A QPolygon in the local coordinate system.
+    :return: A QPolygonF in the world coordinate system.
+    """
+    def local_polygon_to_world(self, local_polygon: QPolygon) -> QPolygonF:
+        # Convert QPolygon to QPolygonF by applying local_to_world on each point
+        world_polygon = QPolygonF()
+        for local_point in local_polygon:
+            world_point = self.local_to_world(local_point)
+            world_polygon.append(world_point)
+        return world_polygon
     def paintEvent(self, event):
         super().paintEvent(event)
         self.draw_layers()
@@ -339,10 +365,10 @@ class ViewCanvas(QWidget):
                 item.selected = False
 
     def item_at_point(self, q_point: QPoint) -> Optional[Item]:
-        """Return the item at the given point or None if no item is found"""
+        """Return the item at the given local point or None if no item is found"""
         for layer in self.view.layers:
             for item in layer.items:
-                if item.contains(q_point):
+                if item.contains_local(q_point):
                     return item
         return None
 
