@@ -4,13 +4,16 @@ from PyQt6.QtWidgets import QApplication
 
 from constants import AUTO_CENTER, BACKGROUND_COLOR, BG_IMAGE_PATH, FRACTION, \
     STATUS_BAR, TITLE, TOOL_BAR, LEFT, TOP, WIDTH, HEIGHT, WORLD_RECTANGLE, \
-    LINE_WIDTH, LINE_COLOR, FILL_COLOR, VISIBLE
+    LINE_WIDTH, LINE_COLOR, FILL_COLOR, VISIBLE, WORLD_POLYGON, CLOSED
 
 from environment import cwd
 from mdiapplication.mainwindow import MainWindow
 from views.view import View
 from world.worldrect import WorldRectangle
 from items.rectangleitem import RectangleItem
+from items.polygonitem import PolygonItem
+from PyQt6.QtGui import QPolygonF
+from PyQt6.QtCore import QPointF
 
 if __name__ == '__main__':
     print("Current Directory:", cwd())
@@ -47,6 +50,14 @@ if __name__ == '__main__':
                   FILL_COLOR: "yellow",
                   WORLD_RECTANGLE: WorldRectangle(0, 10, 50, 70)}
     RectangleItem(layer, attributes)
+
+    attributes = {LINE_COLOR: "brown",
+                  LINE_WIDTH: 2,
+                  FILL_COLOR: "sea green",
+                  CLOSED: True,
+                  WORLD_POLYGON: QPolygonF([QPointF(-39, -33),QPointF(-10, -7.5),
+                                            QPointF(29, -33), QPointF(29, -52)])}
+    PolygonItem(layer, attributes)
 
     layer = view.top_layer
     attributes = {LINE_COLOR: "wheat",
