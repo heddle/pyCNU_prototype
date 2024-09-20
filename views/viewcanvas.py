@@ -242,8 +242,8 @@ class ViewCanvas(QWidget):
         """
         Convert a point from the local system to the world system.
 
-        :param local_point: A tuple (x, y) in the local coordinate system.
-        :return: A tuple (x, y) in the world coordinate system.
+        :param local_point: A point in the local pixel coordinate system.
+        :return: A point in the world coordinate system.
         """
         local_x = local_point.x()
         local_y = local_point.y()
@@ -256,8 +256,8 @@ class ViewCanvas(QWidget):
         """
         Convert a point from the world system to the local system.
 
-        :param world_point: A tuple (x, y) in the world coordinate system.
-        :return: A tuple (x, y) in the local coordinate system.
+        :param world_point: A point in the world coordinate system.
+        :return: A point in the local pixel coordinate system.
         """
         world_x = world_point.x()
         world_y = world_point.y()
@@ -328,6 +328,7 @@ class ViewCanvas(QWidget):
             world_point = self.local_to_world(local_point)
             world_polygon.append(world_point)
         return world_polygon
+
     def paintEvent(self, event):
         super().paintEvent(event)
         self.draw_layers()
